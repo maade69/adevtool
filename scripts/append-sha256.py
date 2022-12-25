@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys, hashlib, os
-pfiles = 'vendor/google_devices/'+sys.argv[1]+'/proprietary-files.txt'
+pfiles = sys.argv[1]+'/proprietary-files.txt'
 if not os.path.exists(pfiles):
     print(pfiles, 'doesnt exist\nmake sure you have followed the instructions below\nhttps://grapheneos.org/build#extracting-vendor-files-for-pixel-devices')
     exit()
@@ -12,7 +12,7 @@ with open(pfiles, 'r') as f:
         lines.append(line)
 for i in range(len(lines)):
     if lines[i] != '':
-        blob = 'vendor/google_devices/'+sys.argv[1]+'/proprietary/'+lines[i]
+        blob = sys.argv[1]+'/proprietary/'+lines[i]
         if "PRESIGNED" in blob:
             blob = blob.replace(";PRESIGNED", "")
         with open(blob, "rb") as f:

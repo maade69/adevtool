@@ -9,6 +9,9 @@ shalines = []
 with open(pfiles, 'r') as f:
     for line in f:
         line = line.partition('#')[0].rstrip()
+        # Drop broken lib
+        if line == "system_ext/app/com.qualcomm.qti.services.secureui/lib/arm64/libsecureuisvc_jni.so":
+            line = ''
         lines.append(line)
 for i in range(len(lines)):
     if lines[i] != '':
@@ -17,7 +20,7 @@ for i in range(len(lines)):
             blob = blob.replace(";PRESIGNED", "")
         with open(blob, "rb") as f:
             bytes = f.read()
-            rhash = hashlib.sha256(bytes).hexdigest();
+            rhash = hashlib.sha256(bytes).hexdigest()
         shalines.append(lines[i]+":SHA256:"+rhash)
         
 with open(pfiles+'.sha256', 'w') as f:

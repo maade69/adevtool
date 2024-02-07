@@ -29,6 +29,12 @@ export interface ToolFingerprint {
   version: string;
 }
 
+/** References to non local resources */
+export interface DynamicRefTable {
+  packageId: PackageId | undefined;
+  packageName: string;
+}
+
 /** Top level message representing a resource table. */
 export interface ResourceTable {
   /**
@@ -44,6 +50,7 @@ export interface ResourceTable {
   overlayable: Overlayable[];
   /** The version fingerprints of the tools that built the resource table. */
   toolFingerprint: ToolFingerprint[];
+  dynamicRefTable: DynamicRefTable[];
 }
 
 /** A package ID in the range [0x00, 0xff]. */
@@ -1245,8 +1252,84 @@ export const ToolFingerprint = {
   },
 };
 
+function createBaseDynamicRefTable(): DynamicRefTable {
+  return { packageId: undefined, packageName: "" };
+}
+
+export const DynamicRefTable = {
+  encode(message: DynamicRefTable, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.packageId !== undefined) {
+      PackageId.encode(message.packageId, writer.uint32(10).fork()).ldelim();
+    }
+    if (message.packageName !== "") {
+      writer.uint32(18).string(message.packageName);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DynamicRefTable {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDynamicRefTable();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.packageId = PackageId.decode(reader, reader.uint32());
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.packageName = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DynamicRefTable {
+    return {
+      packageId: isSet(object.packageId) ? PackageId.fromJSON(object.packageId) : undefined,
+      packageName: isSet(object.packageName) ? String(object.packageName) : "",
+    };
+  },
+
+  toJSON(message: DynamicRefTable): unknown {
+    const obj: any = {};
+    if (message.packageId !== undefined) {
+      obj.packageId = PackageId.toJSON(message.packageId);
+    }
+    if (message.packageName !== "") {
+      obj.packageName = message.packageName;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DynamicRefTable>, I>>(base?: I): DynamicRefTable {
+    return DynamicRefTable.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DynamicRefTable>, I>>(object: I): DynamicRefTable {
+    const message = createBaseDynamicRefTable();
+    message.packageId = (object.packageId !== undefined && object.packageId !== null)
+      ? PackageId.fromPartial(object.packageId)
+      : undefined;
+    message.packageName = object.packageName ?? "";
+    return message;
+  },
+};
+
 function createBaseResourceTable(): ResourceTable {
-  return { sourcePool: undefined, package: [], overlayable: [], toolFingerprint: [] };
+  return { sourcePool: undefined, package: [], overlayable: [], toolFingerprint: [], dynamicRefTable: [] };
 }
 
 export const ResourceTable = {
@@ -1262,6 +1345,9 @@ export const ResourceTable = {
     }
     for (const v of message.toolFingerprint) {
       ToolFingerprint.encode(v!, writer.uint32(34).fork()).ldelim();
+    }
+    for (const v of message.dynamicRefTable) {
+      DynamicRefTable.encode(v!, writer.uint32(42).fork()).ldelim();
     }
     return writer;
   },
@@ -1301,6 +1387,13 @@ export const ResourceTable = {
 
           message.toolFingerprint.push(ToolFingerprint.decode(reader, reader.uint32()));
           continue;
+        case 5:
+          if (tag !== 42) {
+            break;
+          }
+
+          message.dynamicRefTable.push(DynamicRefTable.decode(reader, reader.uint32()));
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1320,6 +1413,9 @@ export const ResourceTable = {
       toolFingerprint: Array.isArray(object?.toolFingerprint)
         ? object.toolFingerprint.map((e: any) => ToolFingerprint.fromJSON(e))
         : [],
+      dynamicRefTable: Array.isArray(object?.dynamicRefTable)
+        ? object.dynamicRefTable.map((e: any) => DynamicRefTable.fromJSON(e))
+        : [],
     };
   },
 
@@ -1337,6 +1433,9 @@ export const ResourceTable = {
     if (message.toolFingerprint?.length) {
       obj.toolFingerprint = message.toolFingerprint.map((e) => ToolFingerprint.toJSON(e));
     }
+    if (message.dynamicRefTable?.length) {
+      obj.dynamicRefTable = message.dynamicRefTable.map((e) => DynamicRefTable.toJSON(e));
+    }
     return obj;
   },
 
@@ -1351,6 +1450,7 @@ export const ResourceTable = {
     message.package = object.package?.map((e) => Package.fromPartial(e)) || [];
     message.overlayable = object.overlayable?.map((e) => Overlayable.fromPartial(e)) || [];
     message.toolFingerprint = object.toolFingerprint?.map((e) => ToolFingerprint.fromPartial(e)) || [];
+    message.dynamicRefTable = object.dynamicRefTable?.map((e) => DynamicRefTable.fromPartial(e)) || [];
     return message;
   },
 };

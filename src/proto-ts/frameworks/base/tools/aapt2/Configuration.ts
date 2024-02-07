@@ -62,6 +62,8 @@ export interface Configuration {
   navigation: Configuration_Navigation;
   /** The minimum SDK version of the device. */
   sdkVersion: number;
+  /** Grammatical gender. */
+  grammaticalGender: Configuration_GrammaticalGender;
   product: string;
   stringified: string;
 }
@@ -690,6 +692,51 @@ export function configuration_NavigationToJSON(object: Configuration_Navigation)
   }
 }
 
+export enum Configuration_GrammaticalGender {
+  GRAM_GENDER_USET = 0,
+  GRAM_GENDER_NEUTER = 1,
+  GRAM_GENDER_FEMININE = 2,
+  GRAM_GENDER_MASCULINE = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function configuration_GrammaticalGenderFromJSON(object: any): Configuration_GrammaticalGender {
+  switch (object) {
+    case 0:
+    case "GRAM_GENDER_USET":
+      return Configuration_GrammaticalGender.GRAM_GENDER_USET;
+    case 1:
+    case "GRAM_GENDER_NEUTER":
+      return Configuration_GrammaticalGender.GRAM_GENDER_NEUTER;
+    case 2:
+    case "GRAM_GENDER_FEMININE":
+      return Configuration_GrammaticalGender.GRAM_GENDER_FEMININE;
+    case 3:
+    case "GRAM_GENDER_MASCULINE":
+      return Configuration_GrammaticalGender.GRAM_GENDER_MASCULINE;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return Configuration_GrammaticalGender.UNRECOGNIZED;
+  }
+}
+
+export function configuration_GrammaticalGenderToJSON(object: Configuration_GrammaticalGender): string {
+  switch (object) {
+    case Configuration_GrammaticalGender.GRAM_GENDER_USET:
+      return "GRAM_GENDER_USET";
+    case Configuration_GrammaticalGender.GRAM_GENDER_NEUTER:
+      return "GRAM_GENDER_NEUTER";
+    case Configuration_GrammaticalGender.GRAM_GENDER_FEMININE:
+      return "GRAM_GENDER_FEMININE";
+    case Configuration_GrammaticalGender.GRAM_GENDER_MASCULINE:
+      return "GRAM_GENDER_MASCULINE";
+    case Configuration_GrammaticalGender.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 function createBaseConfiguration(): Configuration {
   return {
     mcc: 0,
@@ -716,6 +763,7 @@ function createBaseConfiguration(): Configuration {
     navHidden: 0,
     navigation: 0,
     sdkVersion: 0,
+    grammaticalGender: 0,
     product: "",
     stringified: "",
   };
@@ -794,6 +842,9 @@ export const Configuration = {
     }
     if (message.sdkVersion !== 0) {
       writer.uint32(192).uint32(message.sdkVersion);
+    }
+    if (message.grammaticalGender !== 0) {
+      writer.uint32(208).int32(message.grammaticalGender);
     }
     if (message.product !== "") {
       writer.uint32(202).string(message.product);
@@ -979,6 +1030,13 @@ export const Configuration = {
 
           message.sdkVersion = reader.uint32();
           continue;
+        case 26:
+          if (tag !== 208) {
+            break;
+          }
+
+          message.grammaticalGender = reader.int32() as any;
+          continue;
         case 25:
           if (tag !== 202) {
             break;
@@ -1034,6 +1092,9 @@ export const Configuration = {
       navHidden: isSet(object.navHidden) ? configuration_NavHiddenFromJSON(object.navHidden) : 0,
       navigation: isSet(object.navigation) ? configuration_NavigationFromJSON(object.navigation) : 0,
       sdkVersion: isSet(object.sdkVersion) ? Number(object.sdkVersion) : 0,
+      grammaticalGender: isSet(object.grammaticalGender)
+        ? configuration_GrammaticalGenderFromJSON(object.grammaticalGender)
+        : 0,
       product: isSet(object.product) ? String(object.product) : "",
       stringified: isSet(object.stringified) ? String(object.stringified) : "",
     };
@@ -1113,6 +1174,9 @@ export const Configuration = {
     if (message.sdkVersion !== 0) {
       obj.sdkVersion = Math.round(message.sdkVersion);
     }
+    if (message.grammaticalGender !== 0) {
+      obj.grammaticalGender = configuration_GrammaticalGenderToJSON(message.grammaticalGender);
+    }
     if (message.product !== "") {
       obj.product = message.product;
     }
@@ -1151,6 +1215,7 @@ export const Configuration = {
     message.navHidden = object.navHidden ?? 0;
     message.navigation = object.navigation ?? 0;
     message.sdkVersion = object.sdkVersion ?? 0;
+    message.grammaticalGender = object.grammaticalGender ?? 0;
     message.product = object.product ?? "";
     message.stringified = object.stringified ?? "";
     return message;

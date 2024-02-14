@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package com.google.wireless.android.nexus.carrier;
+
+message CarrierSettingsConfig {
+  map<string, string> config = 1;
+}

@@ -1,5 +1,6 @@
 device:
   name: cheetah
+  generation: pixel2022
 
 platform:
   product_makefile: device/google/pantah/aosp_cheetah.mk

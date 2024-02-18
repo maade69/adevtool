@@ -1,5 +1,6 @@
 device:
   name: shiba
+  generation: pixel2023
 
 platform:
   product_makefile: device/google/shusky/aosp_shiba.mk

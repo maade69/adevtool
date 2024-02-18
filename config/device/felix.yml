@@ -1,5 +1,6 @@
 device:
   name: felix
+  generation: pixel2023
 
 platform:
   product_makefile: device/google/felix/aosp_felix.mk

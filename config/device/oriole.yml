@@ -1,5 +1,6 @@
 device:
   name: oriole
+  generation: pixel2021
 
 platform:
   product_makefile: device/google/raviole/aosp_oriole.mk

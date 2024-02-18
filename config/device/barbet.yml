@@ -1,6 +1,7 @@
 device:
   name: barbet
   prev_build_id: UQ1A.240105.002
+  generation: pixel2021
 
 platform:
   product_makefile: device/google/barbet/aosp_barbet.mk

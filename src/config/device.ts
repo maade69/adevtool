@@ -32,6 +32,7 @@ export interface DeviceConfig {
     prev_build_id: string
     // ignored when undefined
     platform_security_patch_level_override?: string
+    generation: string
   }
 
   platform: {

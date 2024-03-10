@@ -1,8 +1,10 @@
 import path from 'path'
 import fetch from 'node-fetch'
+import os from 'os'
 
-import { CarrierSettingsConfig } from '../proto-ts/vendor/adevtool/assets/carrier_settings_config'
-import { exists, listFilesRecursive } from '../util/fs'
+import { Response } from '../proto-ts/vendor/adevtool/assets/response'
+import { Request } from '../proto-ts/vendor/adevtool/assets/request'
+import { exists, listFilesRecursive, TMP_PREFIX } from '../util/fs'
 import assert from 'assert'
 import { createWriteStream, promises as fs } from 'fs'
 import { promises as stream } from 'stream'
@@ -11,14 +13,76 @@ import { OS_CHECKOUT_DIR } from '../config/paths'
 
 const PROTO_PATH = `${OS_CHECKOUT_DIR}/packages/apps/CarrierConfig2/src/com/google/carrier`
 
-export async function parseUpdateConfig(uc: string) {
-  let result = new Map<string, string>()
-  if (await exists(uc)) {
-    const decodedCfg = CarrierSettingsConfig.decode(await fs.readFile(uc)).config
-    Object.keys(decodedCfg).forEach(key => {
-      result.set(key, decodedCfg[key])
-    })
+function getRandom(): string {
+  return `${Math.random()}`.slice(2, 10)
+}
+
+export async function fetchUpdateConfig(
+  device: string,
+  build_id: string,
+  debug: boolean,
+): Promise<Map<string, string>> {
+  const requestData: Request = {
+    field1: {
+      info: {
+        int: 4,
+        deviceInfo: {
+          apilevel: 34,
+          name: device,
+          buildId: build_id,
+          name1: device,
+          name2: device,
+          locale1: 'en',
+          locale2: 'US',
+          manufacturer1: 'Google',
+          manufacturer2: 'google',
+          name3: device,
+        },
+      },
+    },
+    field2: {
+      info: {
+        pkgname: 'com.google.android.carrier',
+      },
+    },
   }
+  const tmp = os.tmpdir()
+  const tmpdir = `${tmp}/${TMP_PREFIX}${getRandom()}`
+  if (debug) console.log(`tmpdir: ${tmpdir}`)
+  fs.mkdir(tmpdir, { recursive: true })
+  const outFile = path.join(tmpdir, getRandom())
+  if (debug) console.log(`outFile: ${outFile}`)
+  await fs.writeFile(outFile, JSON.stringify(Request.toJSON(requestData)))
+  const encodedRequest = Request.encode(requestData).finish()
+  const reqFile = path.join(tmpdir, getRandom())
+  await fs.writeFile(reqFile, encodedRequest)
+  if (debug) console.log(`reqFile: ${reqFile}`)
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-protobuf',
+    },
+    body: encodedRequest,
+  }
+  const response = await fetch(
+    'https://www.googleapis.com/experimentsandconfigs/v1/getExperimentsAndConfigs?r=6&c=1',
+    options,
+  )
+  assert(response.ok)
+  const tmpOutFile = path.join(tmpdir, getRandom())
+  if (debug) console.log(`tmpOutFile: ${tmpOutFile}`)
+  await stream.pipeline(response.body, createWriteStream(tmpOutFile))
+  let result = new Map<string, string>()
+  const decodedResopnse = Response.decode(await fs.readFile(tmpOutFile)).field1!.settings!.cfg!
+  fs.rm(tmpdir, { recursive: true })
+  decodedResopnse.forEach(cfg => {
+    if (cfg.name === 'CarrierSettings__update_config') {
+      const updateConfig = cfg!.unk1!.n!.entry!
+      Object.keys(updateConfig).forEach(key => {
+        result.set(key, updateConfig[key])
+      })
+    }
+  })
   return result
 }
 
@@ -28,18 +92,10 @@ export async function downloadAllConfigs(
   debug: boolean,
   genaration: string,
 ) {
-  let clBaseUrl: string
-  let csBaseUrl: string
-  if (config.has('carrier_list_url')) {
-    clBaseUrl = config.get('carrier_list_url') as string
-  } else {
-    clBaseUrl = ''
-  }
-  if (config.has('carrier_settings_url')) {
-    csBaseUrl = config.get('carrier_settings_url') as string
-  } else {
-    csBaseUrl = ''
-  }
+  //let build_id = flags.prevBuildId ? config.device.prev_build_id : config.device.build_id
+  const clBaseUrl = config.has('carrier_list_url') ? (config.get('carrier_list_url') as string) : ''
+  const csBaseUrl = config.has('carrier_settings_url') ? (config.get('carrier_settings_url') as string) : ''
+  await fs.rm(outDir, { force: true, recursive: true })
   for (let [carrier, version] of config) {
     if (carrier === 'carrier_list_url' || carrier === 'carrier_settings_url') {
       continue
@@ -55,10 +111,8 @@ export async function downloadAllConfigs(
       }
     }
     if (debug) console.log(url)
-    if (typeof genaration !== 'undefined') {
-      if (!url.includes(genaration)) {
-        throw new Error(`carrier_settings_url doesnt match with provided generation (${genaration})`)
-      }
+    if (!url.includes(genaration)) {
+      throw new Error(`carrier_settings_url doesnt match with provided generation (${genaration})`)
     }
     let tmpOutFile = path.join(outDir, `${carrier}.pb` + '.tmp')
     let outFile = path.join(outDir, `${carrier}.pb`)

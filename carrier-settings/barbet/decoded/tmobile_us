@@ -1,0 +1,313 @@
+canonical_name: "tmobile_us"
+version: 30000000112
+apns {
+  apn {
+    name: "T-Mobile Tethering"
+    value: "pcweb.tmobile.com"
+    type: DUN
+    protocol: IPV6
+    user_visible: false
+  }
+  apn {
+    name: "T-Mobile US"
+    value: "fast.t-mobile.com"
+    type: DEFAULT
+    type: SUPL
+    type: IA
+    type: MMS
+    bearer_bitmask: "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|17|20"
+    mmsc: "http://mms.msg.eng.t-mobile.com/mms/wapenc"
+    protocol: IPV6
+    mtu: 1440
+    user_editable: false
+  }
+  apn {
+    name: "T-Mobile US IMS"
+    value: "ims"
+    type: IMS
+    bearer_bitmask: "14|20"
+    protocol: IPV6
+    mtu: 1440
+    user_visible: false
+  }
+  apn {
+    name: "T-Mobile US IMS"
+    value: "ims"
+    type: IMS
+    bearer_bitmask: "18"
+    protocol: IPV6
+    roaming_protocol: IPV6
+    mtu: 1440
+    user_visible: false
+  }
+  apn {
+    name: "T-Mobile MMS"
+    value: "TMUS"
+    type: MMS
+    bearer_bitmask: "18"
+    mmsc: "http://mms.msg.eng.t-mobile.com/mms/wapenc"
+    protocol: IPV6
+    roaming_protocol: IPV6
+    user_editable: false
+  }
+  apn {
+    name: "T-Mobile Emergency"
+    value: "sos"
+    type: EMERGENCY
+    protocol: IPV6
+    roaming_protocol: IPV6
+    user_visible: false
+  }
+}
+configs {
+  config {
+    key: "5g_icon_display_grace_period_string"
+    text_value: "connected_mmwave,legacy,30;connected,legacy,30;not_restricted_rrc_idle,legacy,30;not_restricted_rrc_con,legacy,30"
+  }
+  config {
+    key: "call_composer_picture_server_url_string"
+    text_value: "ue.fcs.mstore.msg.t-mobile.com"
+  }
+  config {
+    key: "carrier_certificate_string_array"
+    text_array {
+      item: "27F96DBAB77B31F6953E4CD2C2DEFE15F5D7C78F073DD7162018EF476B097C34"
+      item: "3D1A4BEF6EE7AF7D34D120E7B1AAC0DD245585DE6237CF100F68333AFACFF562"
+      item: "92B5F8117FBD9BD5738FF168A4FA12CBE284BE834EDE1A7BB44DD8455BA15920"
+    }
+  }
+  config {
+    key: "carrier_default_data_roaming_enabled_bool"
+    bool_value: true
+  }
+  config {
+    key: "carrier_default_wfc_ims_enabled_bool"
+    bool_value: true
+  }
+  config {
+    key: "carrier_default_wfc_ims_mode_int"
+    int_value: 1
+  }
+  config {
+    key: "carrier_default_wfc_ims_roaming_enabled_bool"
+    bool_value: true
+  }
+  config {
+    key: "carrier_default_wfc_ims_roaming_mode_int"
+    int_value: 2
+  }
+  config {
+    key: "carrier_ims_gba_required_bool"
+    bool_value: true
+  }
+  config {
+    key: "carrier_supports_ss_over_ut_bool"
+    bool_value: true
+  }
+  config {
+    key: "carrier_ussd_method_int"
+    int_value: 1
+  }
+  config {
+    key: "carrier_volte_available_bool"
+    bool_value: true
+  }
+  config {
+    key: "carrier_vt_available_bool"
+    bool_value: true
+  }
+  config {
+    key: "carrier_wfc_ims_available_bool"
+    bool_value: true
+  }
+  config {
+    key: "data_limit_threshold_bytes_long"
+    long_value: 107374182400
+  }
+  config {
+    key: "editable_voicemail_number_setting_bool"
+    bool_value: false
+  }
+  config {
+    key: "emergency_number_prefix_string_array"
+    text_array {
+      item: "*272"
+    }
+  }
+  config {
+    key: "enable_carrier_display_name_resolver_bool"
+    bool_value: true
+  }
+  config {
+    key: "gba_ua_tls_cipher_suite_int"
+    int_value: 47
+  }
+  config {
+    key: "gsm_roaming_networks_string_array"
+    text_array {
+      item: "310032"
+      item: "310033"
+      item: "310110"
+      item: "310140"
+      item: "310370"
+      item: "310400"
+      item: "310470"
+      item: "310500"
+      item: "310970"
+      item: "311170"
+      item: "311250"
+    }
+  }
+  config {
+    key: "hide_enhanced_4g_lte_bool"
+    bool_value: true
+  }
+  config {
+    key: "hide_tty_hco_vco_with_rtt"
+    bool_value: true
+  }
+  config {
+    key: "ignore_rtt_mode_setting_bool"
+    bool_value: true
+  }
+  config {
+    key: "ims.enable_presence_publish_bool"
+    bool_value: true
+  }
+  config {
+    key: "ims_reasoninfo_mapping_string_array"
+    text_array {
+      item: "*|Call is dropped due to Wi-Fi signal is degraded|1407"
+    }
+  }
+  config {
+    key: "iwlan.diffie_hellman_groups_int_array"
+    int_array {
+      item: 14
+    }
+  }
+  config {
+    key: "iwlan.epdg_address_priority_int_array"
+    int_array {
+      item: 0
+      item: 1
+    }
+  }
+  config {
+    key: "iwlan.epdg_static_address_string"
+    text_value: "epdg.epc.mnc260.mcc310.pub.3gppnetwork.org"
+  }
+  config {
+    key: "iwlan.key_error_policy_config_string"
+    text_value: "[{\"ApnName\": \"*\",\"ErrorTypes\": [{\"ErrorType\": \"IKE_PROTOCOL_ERROR_TYPE\",\"ErrorDetails\": [\"10500\"],\"RetryArray\": [\"3600\",\"7200\",\"10800\"],\"UnthrottlingEvents\": [\"APM_ENABLE_EVENT\",\"WIFI_DISABLE_EVENT\",\"WIFI_CALLING_DISABLE_EVENT\"]},{\"ErrorType\": \"IKE_PROTOCOL_ERROR_TYPE\",\"ErrorDetails\": [\"11001\",\"11011\"],\"RetryArray\": [],\"UnthrottlingEvents\": []}]}]"
+  }
+  config {
+    key: "maxImageHeight"
+    int_value: 1944
+  }
+  config {
+    key: "maxImageWidth"
+    int_value: 2592
+  }
+  config {
+    key: "maxMessageSize"
+    int_value: 1048576
+  }
+  config {
+    key: "mmi_two_digit_number_pattern_string_array"
+    text_array {
+      item: "*2"
+    }
+  }
+  config {
+    key: "mmsCloseConnection"
+    bool_value: true
+  }
+  config {
+    key: "non_roaming_operator_string_array"
+    text_array {
+      item: "310"
+      item: "311"
+      item: "312"
+      item: "313"
+      item: "314"
+      item: "315"
+      item: "316"
+    }
+  }
+  config {
+    key: "read_only_apn_types_string_array"
+    text_array {
+    }
+  }
+  config {
+    key: "recipientLimit"
+    int_value: 20
+  }
+  config {
+    key: "rtt_downgrade_supported_bool"
+    bool_value: true
+  }
+  config {
+    key: "rtt_supported_bool"
+    bool_value: true
+  }
+  config {
+    key: "show_data_connected_roaming_notification"
+    bool_value: true
+  }
+  config {
+    key: "smsToMmsTextThreshold"
+    int_value: 12
+  }
+  config {
+    key: "support_video_conference_call_bool"
+    bool_value: true
+  }
+  config {
+    key: "volte_replacement_rat_int"
+    int_value: 3
+  }
+  config {
+    key: "wfc_carrier_name_override_by_pnn_bool"
+    bool_value: true
+  }
+  config {
+    key: "wfc_operator_error_codes_string_array"
+    text_array {
+      item: "REG09|0"
+    }
+  }
+  config {
+    key: "wfc_spn_format_idx_int"
+    int_value: 1
+  }
+  config {
+    key: "wifi.avoid_5ghz_softap_for_laa_bool"
+    bool_value: true
+  }
+  config {
+    key: "wifi.avoid_5ghz_wifi_direct_for_laa_bool"
+    bool_value: true
+  }
+  config {
+    key: "wifi.carrier_profiles_version_int"
+    int_value: 1
+  }
+  config {
+    key: "wifi.passpoint_profiles_string_array"
+    text_array {
+      item: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><PasspointProfile><PPSMO><![CDATA[<MgmtTree xmlns=\"syncml:dmddf1.2\"><VerDTD>1.2</VerDTD><Node><NodeName>PerProviderSubscription</NodeName><RTProperties><Type><DDFName>urn:wfa:mo:hotspot2dot0-perprovidersubscription:1.0</DDFName></Type></RTProperties><Node><NodeName>i001</NodeName><Node><NodeName>HomeSP</NodeName><Node><NodeName>FriendlyName</NodeName><Value>T-Mobile Passpoint</Value></Node><Node><NodeName>FQDN</NodeName><Value>t-mobile.com</Value></Node></Node><Node><NodeName>Credential</NodeName><Node><NodeName>Realm</NodeName><Value>wlan.mnc260.mcc310.3gppnetwork.org</Value></Node><Node><NodeName>SIM</NodeName><Node><NodeName>IMSI</NodeName><Value>260310*</Value></Node><Node><NodeName>EAPType</NodeName><Value>23</Value></Node></Node></Node></Node></Node></MgmtTree>]]></PPSMO></PasspointProfile>"
+      item: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><PasspointProfile><PPSMO><![CDATA[<MgmtTree xmlns=\"syncml:dmddf1.2\"><VerDTD>1.2</VerDTD><Node><NodeName>PerProviderSubscription</NodeName><RTProperties><Type><DDFName>urn:wfa:mo:hotspot2dot0-perprovidersubscription:1.0</DDFName></Type></RTProperties><Node><NodeName>i001</NodeName><Node><NodeName>HomeSP</NodeName><Node><NodeName>FriendlyName</NodeName><Value>T-Mobile Passpoint</Value></Node><Node><NodeName>FQDN</NodeName><Value>t-mobile.com</Value></Node></Node><Node><NodeName>Credential</NodeName><Node><NodeName>Realm</NodeName><Value>wlan.mnc310.mcc310.3gppnetwork.org</Value></Node><Node><NodeName>SIM</NodeName><Node><NodeName>IMSI</NodeName><Value>310310*</Value></Node><Node><NodeName>EAPType</NodeName><Value>23</Value></Node></Node></Node></Node></Node></MgmtTree>]]></PPSMO></PasspointProfile>"
+    }
+  }
+}
+vendor_configs {
+  client {
+    name: "modem"
+    value: "\n\031\n\r/google/model\022\010ZzcyNTA=\n=\n\025/google/paris_version\022$ZzcyNTBfdG1vXzYxXzIwMjEwODI1MjA0NQ==\n\206\001\n\'/nv/item_files/modem/mmode/nr_band_pref\022XAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==\"\001\001"
+  }
+}
+last_updated {
+  seconds: 1630004471
+}

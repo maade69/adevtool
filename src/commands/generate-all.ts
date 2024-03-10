@@ -310,15 +310,16 @@ export default class GenerateFull extends Command {
         }
 
         if (!flags.doNotReplaceCarrierSettings) {
-          let srcCsDir = path.join(CARRIER_SETTINGS_DIR, config.device.generation)
-          assert(await exists(srcCsDir))
-          for await (let file of listFilesRecursive(srcCsDir)) {
-            if (path.extname(file) !== '.pb') {
-              continue
+          let srcCsDir = path.join(CARRIER_SETTINGS_DIR, config.device.name)
+          if (await exists(srcCsDir)) {
+            for await (let file of listFilesRecursive(srcCsDir)) {
+              if (path.extname(file) !== '.pb') {
+                continue
+              }
+              let destFile = path.join(vendorDirs.proprietary, 'product/etc/CarrierSettings', path.basename(file))
+              await fs.rm(destFile, { force: true })
+              await fs.copyFile(file, destFile)
             }
-            let destFile = path.join(vendorDirs.proprietary, 'product/etc/CarrierSettings', path.basename(file))
-            await fs.rm(destFile, { force: true })
-            await fs.copyFile(file, destFile)
           }
         }
 

@@ -28,7 +28,8 @@ import {
   PropResults,
   resolveOverrides,
   resolveSepolicyDirs,
-  updatePresigned, writeEnvsetupCommands,
+  updatePresigned,
+  writeEnvsetupCommands,
 } from '../frontend/generate'
 import { writeReadme } from '../frontend/readme'
 import { DeviceImages, prepareDeviceImages, WRAPPED_SOURCE_FLAGS, wrapSystemSrc } from '../frontend/source'
@@ -45,6 +46,7 @@ import {
 } from '../util/file-tree-spec'
 import { exists, listFilesRecursive, withTempDir } from '../util/fs'
 import { spawnAsync } from '../util/process'
+import { getVersionsMap } from '../blobs/carrier'
 
 const doDevice = (
   dirs: VendorDirectories,
@@ -176,10 +178,7 @@ const doDevice = (
       ),
     )
 
-    await Promise.all([
-      writeEnvsetupCommands(config, dirs),
-      writeReadme(config, dirs, propResults),
-    ])
+    await Promise.all([writeEnvsetupCommands(config, dirs), writeReadme(config, dirs, propResults)])
   })
 
 export default class GenerateFull extends Command {
@@ -310,15 +309,26 @@ export default class GenerateFull extends Command {
         }
 
         if (!flags.doNotReplaceCarrierSettings) {
-          let srcCsDir = path.join(CARRIER_SETTINGS_DIR, config.device.generation)
-          assert(await exists(srcCsDir))
-          for await (let file of listFilesRecursive(srcCsDir)) {
-            if (path.extname(file) !== '.pb') {
-              continue
+          const srcCsDir = path.join(CARRIER_SETTINGS_DIR, config.device.name)
+          const dstCsDir = path.join(vendorDirs.proprietary, 'product/etc/CarrierSettings')
+          console.log(dstCsDir, srcCsDir)
+          if (await exists(srcCsDir)) {
+            const srcVersions = await getVersionsMap(srcCsDir)
+            const dstVersions = await getVersionsMap(dstCsDir)
+            for await (let file of listFilesRecursive(srcCsDir)) {
+              if (path.extname(file) !== '.pb') {
+                continue
+              }
+              let destFile = path.join(dstCsDir, path.basename(file))
+              const srcVer = srcVersions.has('version') ? (srcVersions.get('version') as number) : 0
+              const dstVer = dstVersions.has('version') ? (dstVersions.get('version') as number) : 0
+              if (srcVer < dstVer) {
+                console.log(`skipping copying ${file} due to older version (${srcVer}<${dstVer})`)
+                continue
+              }
+              await fs.rm(destFile, { force: true })
+              await fs.copyFile(file, destFile)
             }
-            let destFile = path.join(vendorDirs.proprietary, 'product/etc/CarrierSettings', path.basename(file))
-            await fs.rm(destFile, { force: true })
-            await fs.copyFile(file, destFile)
           }
         }
 
@@ -402,7 +412,9 @@ async function compareToReferenceFileTreeSpec(vendorDirs: VendorDirectories, con
 
   if (cmp.numDiffs() != 0) {
     console.log('\n')
-    throw new Error(`Vendor module for ${config.device.name} doesn't match its FileTreeSpec in ${getVendorModuleTreeSpecFile(config)}.
+    throw new Error(`Vendor module for ${
+      config.device.name
+    } doesn't match its FileTreeSpec in ${getVendorModuleTreeSpecFile(config)}.
 To update it, use the --${GenerateFull.flags.updateSpec.name} flag.`)
   }
 }

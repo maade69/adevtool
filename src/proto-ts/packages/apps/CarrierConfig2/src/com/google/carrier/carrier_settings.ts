@@ -20,6 +20,11 @@ export const protobufPackage = "com.google.carrier";
  * limitations under the License.
  */
 
+export interface Timestamp {
+  seconds: number;
+  nanos: number;
+}
+
 /**
  * Settings of one carrier, including apns and configs
  * This is the payload to be delivered from server
@@ -39,6 +44,7 @@ export interface CarrierSettings {
     | undefined;
   /** Vendor carrier configs */
   vendorConfigs: VendorConfigs | undefined;
+  lastUpdated: Timestamp | undefined;
 }
 
 /** A collection of multiple carriers’ settings */
@@ -47,6 +53,7 @@ export interface MultiCarrierSettings {
   version: number;
   /** List of CarrierSettings */
   setting: CarrierSettings[];
+  lastUpdated: Timestamp | undefined;
 }
 
 /** An access point name (aka. APN) entry */
@@ -107,6 +114,9 @@ export interface ApnItem {
    */
   apnSetId: number;
   skip464xlat: ApnItem_Xlat;
+  lingeringNetworkTypeBitmask: string;
+  alwaysOn: boolean;
+  mtuV6: number;
 }
 
 /**
@@ -375,8 +385,89 @@ export interface VendorConfigs {
   client: VendorConfigClient[];
 }
 
+function createBaseTimestamp(): Timestamp {
+  return { seconds: 0, nanos: 0 };
+}
+
+export const Timestamp = {
+  encode(message: Timestamp, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.seconds !== 0) {
+      writer.uint32(8).int64(message.seconds);
+    }
+    if (message.nanos !== 0) {
+      writer.uint32(16).int32(message.nanos);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Timestamp {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTimestamp();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.seconds = longToNumber(reader.int64() as Long);
+          continue;
+        case 2:
+          if (tag !== 16) {
+            break;
+          }
+
+          message.nanos = reader.int32();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Timestamp {
+    return {
+      seconds: isSet(object.seconds) ? Number(object.seconds) : 0,
+      nanos: isSet(object.nanos) ? Number(object.nanos) : 0,
+    };
+  },
+
+  toJSON(message: Timestamp): unknown {
+    const obj: any = {};
+    if (message.seconds !== 0) {
+      obj.seconds = Math.round(message.seconds);
+    }
+    if (message.nanos !== 0) {
+      obj.nanos = Math.round(message.nanos);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<Timestamp>, I>>(base?: I): Timestamp {
+    return Timestamp.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<Timestamp>, I>>(object: I): Timestamp {
+    const message = createBaseTimestamp();
+    message.seconds = object.seconds ?? 0;
+    message.nanos = object.nanos ?? 0;
+    return message;
+  },
+};
+
 function createBaseCarrierSettings(): CarrierSettings {
-  return { canonicalName: "", version: 0, apns: undefined, configs: undefined, vendorConfigs: undefined };
+  return {
+    canonicalName: "",
+    version: 0,
+    apns: undefined,
+    configs: undefined,
+    vendorConfigs: undefined,
+    lastUpdated: undefined,
+  };
 }
 
 export const CarrierSettings = {
@@ -395,6 +486,9 @@ export const CarrierSettings = {
     }
     if (message.vendorConfigs !== undefined) {
       VendorConfigs.encode(message.vendorConfigs, writer.uint32(50).fork()).ldelim();
+    }
+    if (message.lastUpdated !== undefined) {
+      Timestamp.encode(message.lastUpdated, writer.uint32(66).fork()).ldelim();
     }
     return writer;
   },
@@ -441,6 +535,13 @@ export const CarrierSettings = {
 
           message.vendorConfigs = VendorConfigs.decode(reader, reader.uint32());
           continue;
+        case 8:
+          if (tag !== 66) {
+            break;
+          }
+
+          message.lastUpdated = Timestamp.decode(reader, reader.uint32());
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -457,6 +558,7 @@ export const CarrierSettings = {
       apns: isSet(object.apns) ? CarrierApns.fromJSON(object.apns) : undefined,
       configs: isSet(object.configs) ? CarrierConfig.fromJSON(object.configs) : undefined,
       vendorConfigs: isSet(object.vendorConfigs) ? VendorConfigs.fromJSON(object.vendorConfigs) : undefined,
+      lastUpdated: isSet(object.lastUpdated) ? Timestamp.fromJSON(object.lastUpdated) : undefined,
     };
   },
 
@@ -477,6 +579,9 @@ export const CarrierSettings = {
     if (message.vendorConfigs !== undefined) {
       obj.vendorConfigs = VendorConfigs.toJSON(message.vendorConfigs);
     }
+    if (message.lastUpdated !== undefined) {
+      obj.lastUpdated = Timestamp.toJSON(message.lastUpdated);
+    }
     return obj;
   },
 
@@ -496,12 +601,15 @@ export const CarrierSettings = {
     message.vendorConfigs = (object.vendorConfigs !== undefined && object.vendorConfigs !== null)
       ? VendorConfigs.fromPartial(object.vendorConfigs)
       : undefined;
+    message.lastUpdated = (object.lastUpdated !== undefined && object.lastUpdated !== null)
+      ? Timestamp.fromPartial(object.lastUpdated)
+      : undefined;
     return message;
   },
 };
 
 function createBaseMultiCarrierSettings(): MultiCarrierSettings {
-  return { version: 0, setting: [] };
+  return { version: 0, setting: [], lastUpdated: undefined };
 }
 
 export const MultiCarrierSettings = {
@@ -511,6 +619,9 @@ export const MultiCarrierSettings = {
     }
     for (const v of message.setting) {
       CarrierSettings.encode(v!, writer.uint32(18).fork()).ldelim();
+    }
+    if (message.lastUpdated !== undefined) {
+      Timestamp.encode(message.lastUpdated, writer.uint32(34).fork()).ldelim();
     }
     return writer;
   },
@@ -536,6 +647,13 @@ export const MultiCarrierSettings = {
 
           message.setting.push(CarrierSettings.decode(reader, reader.uint32()));
           continue;
+        case 4:
+          if (tag !== 34) {
+            break;
+          }
+
+          message.lastUpdated = Timestamp.decode(reader, reader.uint32());
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -549,6 +667,7 @@ export const MultiCarrierSettings = {
     return {
       version: isSet(object.version) ? Number(object.version) : 0,
       setting: Array.isArray(object?.setting) ? object.setting.map((e: any) => CarrierSettings.fromJSON(e)) : [],
+      lastUpdated: isSet(object.lastUpdated) ? Timestamp.fromJSON(object.lastUpdated) : undefined,
     };
   },
 
@@ -560,6 +679,9 @@ export const MultiCarrierSettings = {
     if (message.setting?.length) {
       obj.setting = message.setting.map((e) => CarrierSettings.toJSON(e));
     }
+    if (message.lastUpdated !== undefined) {
+      obj.lastUpdated = Timestamp.toJSON(message.lastUpdated);
+    }
     return obj;
   },
 
@@ -570,6 +692,9 @@ export const MultiCarrierSettings = {
     const message = createBaseMultiCarrierSettings();
     message.version = object.version ?? 0;
     message.setting = object.setting?.map((e) => CarrierSettings.fromPartial(e)) || [];
+    message.lastUpdated = (object.lastUpdated !== undefined && object.lastUpdated !== null)
+      ? Timestamp.fromPartial(object.lastUpdated)
+      : undefined;
     return message;
   },
 };
@@ -601,6 +726,9 @@ function createBaseApnItem(): ApnItem {
     userEditable: false,
     apnSetId: 0,
     skip464xlat: 0,
+    lingeringNetworkTypeBitmask: "",
+    alwaysOn: false,
+    mtuV6: 0,
   };
 }
 
@@ -682,6 +810,15 @@ export const ApnItem = {
     }
     if (message.skip464xlat !== 0) {
       writer.uint32(208).int32(message.skip464xlat);
+    }
+    if (message.lingeringNetworkTypeBitmask !== "") {
+      writer.uint32(218).string(message.lingeringNetworkTypeBitmask);
+    }
+    if (message.alwaysOn === true) {
+      writer.uint32(224).bool(message.alwaysOn);
+    }
+    if (message.mtuV6 !== 0) {
+      writer.uint32(232).int32(message.mtuV6);
     }
     return writer;
   },
@@ -878,6 +1015,27 @@ export const ApnItem = {
 
           message.skip464xlat = reader.int32() as any;
           continue;
+        case 27:
+          if (tag !== 218) {
+            break;
+          }
+
+          message.lingeringNetworkTypeBitmask = reader.string();
+          continue;
+        case 28:
+          if (tag !== 224) {
+            break;
+          }
+
+          message.alwaysOn = reader.bool();
+          continue;
+        case 29:
+          if (tag !== 232) {
+            break;
+          }
+
+          message.mtuV6 = reader.int32();
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -914,6 +1072,11 @@ export const ApnItem = {
       userEditable: isSet(object.userEditable) ? Boolean(object.userEditable) : false,
       apnSetId: isSet(object.apnSetId) ? Number(object.apnSetId) : 0,
       skip464xlat: isSet(object.skip464xlat) ? apnItem_XlatFromJSON(object.skip464xlat) : 0,
+      lingeringNetworkTypeBitmask: isSet(object.lingeringNetworkTypeBitmask)
+        ? String(object.lingeringNetworkTypeBitmask)
+        : "",
+      alwaysOn: isSet(object.alwaysOn) ? Boolean(object.alwaysOn) : false,
+      mtuV6: isSet(object.mtuV6) ? Number(object.mtuV6) : 0,
     };
   },
 
@@ -994,6 +1157,15 @@ export const ApnItem = {
     if (message.skip464xlat !== 0) {
       obj.skip464xlat = apnItem_XlatToJSON(message.skip464xlat);
     }
+    if (message.lingeringNetworkTypeBitmask !== "") {
+      obj.lingeringNetworkTypeBitmask = message.lingeringNetworkTypeBitmask;
+    }
+    if (message.alwaysOn === true) {
+      obj.alwaysOn = message.alwaysOn;
+    }
+    if (message.mtuV6 !== 0) {
+      obj.mtuV6 = Math.round(message.mtuV6);
+    }
     return obj;
   },
 
@@ -1027,6 +1199,9 @@ export const ApnItem = {
     message.userEditable = object.userEditable ?? false;
     message.apnSetId = object.apnSetId ?? 0;
     message.skip464xlat = object.skip464xlat ?? 0;
+    message.lingeringNetworkTypeBitmask = object.lingeringNetworkTypeBitmask ?? "";
+    message.alwaysOn = object.alwaysOn ?? false;
+    message.mtuV6 = object.mtuV6 ?? 0;
     return message;
   },
 };

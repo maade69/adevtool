@@ -38,7 +38,6 @@ export default class DownloadCarrierSettings extends Command {
           const build_id = flags.prevBuildId ? config.device.prev_build_id : config.device.build_id
           const updateConfig = await fetchUpdateConfig(config.device.name, build_id, flags.debug)
           if (flags.debug) {
-            console.log(config.device.name, build_id)
             console.log(updateConfig)
           }
           const outDir = path.join(flags.out, config.device.name)
@@ -46,7 +45,7 @@ export default class DownloadCarrierSettings extends Command {
           await decodeConfigs(outDir, path.join(outDir, 'decoded'))
         }
       },
-      config => config.device.name,
+      config => `${config.device.name} ${flags.prevBuildId ? config.device.prev_build_id : config.device.build_id}`,
     )
   }
 }

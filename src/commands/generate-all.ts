@@ -311,7 +311,6 @@ export default class GenerateFull extends Command {
         if (!flags.doNotReplaceCarrierSettings) {
           const srcCsDir = path.join(CARRIER_SETTINGS_DIR, config.device.name)
           const dstCsDir = path.join(vendorDirs.proprietary, 'product/etc/CarrierSettings')
-          console.log(dstCsDir, srcCsDir)
           if (await exists(srcCsDir)) {
             const srcVersions = await getVersionsMap(srcCsDir)
             const dstVersions = await getVersionsMap(dstCsDir)

@@ -1,6 +1,7 @@
 import path from 'path'
 import fetch from 'node-fetch'
 import os from 'os'
+import chalk from 'chalk'
 
 import { Response } from '../proto-ts/vendor/adevtool/assets/response'
 import { Request } from '../proto-ts/vendor/adevtool/assets/request'
@@ -96,6 +97,10 @@ export async function downloadAllConfigs(
   debug: boolean,
   genaration: string,
 ) {
+  if ((config.has('is_pixel') && config.get('is_pixel') === 'no_ota') || config.size <= 2) {
+    console.log(chalk.grey(`No updates are available for ${path.parse(outDir).base}`))
+    return
+  }
   const clBaseUrl = config.has('carrier_list_url') ? (config.get('carrier_list_url') as string) : ''
   const csBaseUrl = config.has('carrier_settings_url') ? (config.get('carrier_settings_url') as string) : ''
   await fs.rm(outDir, { force: true, recursive: true })
@@ -125,9 +130,9 @@ export async function downloadAllConfigs(
     if (resp.ok) {
       await stream.pipeline(resp.body!, createWriteStream(tmpOutFile))
       await fs.rename(tmpOutFile, outFile)
-      if (debug) console.log(`Downloaded ${carrier}-${version} to ${outFile}`)
+      console.log(`Downloaded ${carrier}-${version} to ${outFile}`)
     } else {
-      console.log(`Failed to download ${carrier}-${version}\nurl: ${url}`)
+      console.log(chalk.red(`Failed to download ${carrier}-${version}\nurl: ${url}`))
     }
   }
 }

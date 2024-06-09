@@ -46,7 +46,7 @@ import {
 } from '../util/file-tree-spec'
 import { exists, listFilesRecursive, withTempDir } from '../util/fs'
 import { spawnAsync } from '../util/process'
-import { getVersionsMap } from '../blobs/carrier'
+import { decodeConfigs, getVersionsMap } from '../blobs/carrier'
 
 const doDevice = (
   dirs: VendorDirectories,
@@ -309,9 +309,10 @@ export default class GenerateFull extends Command {
         }
 
         if (!flags.doNotReplaceCarrierSettings) {
-          const srcCsDir = path.join(CARRIER_SETTINGS_DIR, config.device.name)
-          const dstCsDir = path.join(vendorDirs.proprietary, 'product/etc/CarrierSettings')
+          const srcCsDir = getCarrierSettingsDeviceDir(config)
+          const dstCsDir = getCarrierSettingsVendorDir(vendorDirs)
           if (await exists(srcCsDir)) {
+            this.log(chalk.bold(`Updating carrier settings from ${srcCsDir}`))
             const srcVersions = await getVersionsMap(srcCsDir)
             const dstVersions = await getVersionsMap(dstCsDir)
             for await (let file of listFilesRecursive(srcCsDir)) {
@@ -336,6 +337,15 @@ export default class GenerateFull extends Command {
           let cpSkelPromise = copyVendorSkel(vendorDirs, config)
           await writeVendorFileTreeSpec(vendorDirs, config)
           await cpSkelPromise
+          await decodeConfigs(
+            getCarrierSettingsVendorDir(vendorDirs),
+            path.join(
+              VENDOR_MODULE_SKELS_DIR,
+              config.device.vendor,
+              config.device.name,
+              'proprietary/product/etc/CarrierSettings',
+            ),
+          )
         } else {
           try {
             await compareToReferenceFileTreeSpec(vendorDirs, config)
@@ -478,6 +488,14 @@ function getVendorModuleTreeSpecFile(config: DeviceConfig) {
 
 function getVendorModuleSkelDir(config: DeviceConfig) {
   return path.join(VENDOR_MODULE_SKELS_DIR, config.device.vendor, config.device.name)
+}
+
+function getCarrierSettingsVendorDir(dirs: VendorDirectories) {
+  return path.join(dirs.proprietary, 'product/etc/CarrierSettings')
+}
+
+function getCarrierSettingsDeviceDir(config: DeviceConfig) {
+  return path.join(CARRIER_SETTINGS_DIR, config.device.name)
 }
 
 // soong detects .bp, .mk files everywhere in OS checkout dir, add '.skip' suffix to the ones in vendor-skels/ dir

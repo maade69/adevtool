@@ -39,7 +39,7 @@ export default class UpdateCarrierSettings extends Command {
       false,
       async config => {
         // skip tangorpro due to lack of mobile connectivity
-        if (config.device.name !== 'tangorpro') {
+        if (config.device.mobile) {
           const buildId = flags.buildId !== undefined ? flags.buildId : config.device.build_id
           const outDir = path.join(flags.out, config.device.name)
           const updateConfig = await fetchUpdateConfig(config.device.name, buildId, flags.debug)
@@ -47,7 +47,7 @@ export default class UpdateCarrierSettings extends Command {
           await downloadAllConfigs(updateConfig, outDir, flags.debug)
           if (flags.generateDumps) await decodeConfigs(outDir, path.join(outDir, 'decoded'))
         } else {
-          this.log('tangorpro is not supported due to lack of mobile connectivity')
+          this.log(`${config.device.name} is not supported due to lack of mobile connectivity`)
         }
       },
       config => `${config.device.name} ${flags.buildId !== undefined ? flags.buildId : config.device.build_id}`,

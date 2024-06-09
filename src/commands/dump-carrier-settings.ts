@@ -34,7 +34,7 @@ export default class DumpCarrierSettings extends Command {
       false,
       async config => {
         // skip tangorpro due to lack of mobile connectivity
-        if (config.device.name !== 'tangorpro') {
+        if (config.device.mobile) {
           const build_id = flags.buildId !== undefined ? flags.buildId : config.device.build_id
           const images = await prepareFactoryImages(index, [config], [build_id])
           const deviceImages = images.get(getDeviceBuildId(config, build_id))!
@@ -43,7 +43,7 @@ export default class DumpCarrierSettings extends Command {
           assert(await exists(stockCsPath))
           await decodeConfigs(stockCsPath, outDir)
         } else {
-          this.log('tangorpro is not supported due to lack of mobile connectivity')
+          this.log(`${config.device.name} is not supported due to lack of mobile connectivity`)
         }
       },
       config => `${config.device.name} ${flags.buildId !== undefined ? flags.buildId : config.device.build_id}`,
